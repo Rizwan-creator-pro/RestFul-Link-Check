@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Public API Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; margin-top: 0; }
+        button { background: #1a73e8; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
+        button:hover { background: #155cb4; }
+        #responseBox { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; font-family: monospace; overflow-x: auto; white-space: pre-wrap; max-height: 400px; display: none; margin-top: 20px; border-left: 5px solid #a6e22e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 Fetching Data from Public API</h2>
+    <button onclick="fetchPublicData()">Get Data Now</button>
+    <pre id="responseBox"></pre>
+</div>
+
+<script>
+async function fetchPublicData() {
+    const responseBox = document.getElementById('responseBox');
+    const apiUrl = "https://g086cd062cdff6a-services.adb.ap-singapore-1.oraclecloudapps.com/ords/aiagent/lead_agent/chat";
+    
+    try {
+        // We just fetch the public URL directly with NO extra security headers needed
+        const response = await fetch(apiUrl, { method: 'GET' });
+
+        if (!response.ok) {
+            throw new Error(`Server Error Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        responseBox.style.display = 'block';
+        responseBox.style.backgroundColor = '#272822';
+        responseBox.style.color = '#f8f8f2';
+        responseBox.innerText = JSON.stringify(data, null, 4);
+
+    } catch (error) {
+        responseBox.style.display = 'block';
+        responseBox.style.backgroundColor = '#fff0f0';
+        responseBox.style.color = '#cc0000';
+        responseBox.innerText = `Error Occurred:\n${error.message}\n\n💡 Did you type * in Origins Allowed and hit Apply Changes?`;
+    }
+}
+</script>
+
+</body>
+</html>
