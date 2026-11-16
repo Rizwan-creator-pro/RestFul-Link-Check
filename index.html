@@ -2,49 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Public API Tester</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Public API Tester</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h2 { color: #1a73e8; margin-top: 0; }
-        button { background: #1a73e8; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #eaeaea; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #555; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input[type="text"]:focus { border-color: #1a73e8; outline: none; }
+        button { background: #1a73e8; color: white; border: none; padding: 14px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(26,115,232,0.2); }
         button:hover { background: #155cb4; }
-        #responseBox { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; font-family: monospace; overflow-x: auto; white-space: pre-wrap; max-height: 400px; display: none; margin-top: 20px; border-left: 5px solid #a6e22e; }
+        #loadingText { color: #666; font-style: italic; display: none; margin-top: 15px; text-align: center; }
+        #responseBox { background: #272822; color: #f8f8f2; padding: 20px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; overflow-x: auto; white-space: pre-wrap; max-height: 500px; display: none; margin-top: 20px; border-left: 5px solid #a6e22e; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3); font-size: 14px; line-height: 1.5; }
+        .hint-box { background: #e8f0fe; color: #1967d2; padding: 12px 15px; border-radius: 4px; font-size: 13px; margin-top: 15px; border-left: 4px solid #1a73e8; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🚀 Fetching Data from Public API</h2>
-    <button onclick="fetchPublicData()">Get Data Now</button>
+    <h2>🚀 Live Oracle APEX REST Tester</h2>
+    
+    <div class="input-group">
+        <label for="apiUrl">Paste Your Public API REST Link Here:</label>
+        <input type="text" id="apiUrl" placeholder="https://.../ords/.../lead_agent/chat" value="">
+    </div>
+
+    <button onclick="fetchPublicData()">Fetch Live Data</button>
+    
+    <div id="loadingText">⏳ Connecting to Oracle cloud and fetching rows...</div>
+    
     <pre id="responseBox"></pre>
+
+    <div class="hint-box">
+        <strong>💡 Deployment Check:</strong> Make sure your Oracle APEX Module has <code>Origins Allowed</code> set to <code>*</code> and that you clicked <strong>Apply Changes</strong>, otherwise Netlify will block the connection.
+    </div>
 </div>
 
 <script>
 async function fetchPublicData() {
+    const apiUrl = document.getElementById('apiUrl').value.trim();
     const responseBox = document.getElementById('responseBox');
-    const apiUrl = "https://g086cd062cdff6a-services.adb.ap-singapore-1.oraclecloudapps.com/ords/aiagent/lead_agent/chat";
+    const loadingText = document.getElementById('loadingText');
     
+    // Clear old displays
+    responseBox.style.display = 'none';
+    
+    if (!apiUrl) {
+        responseBox.style.display = 'block';
+        responseBox.style.backgroundColor = '#fff0f0';
+        responseBox.style.color = '#cc0000';
+        responseBox.style.borderLeftColor = '#cc0000';
+        responseBox.innerText = "Error: Please paste a valid API link inside the text box first.";
+        return;
+    }
+
+    loadingText.style.display = 'block';
+
     try {
-        // We just fetch the public URL directly with NO extra security headers needed
-        const response = await fetch(apiUrl, { method: 'GET' });
+        const response = await fetch(apiUrl, {
+            method: 'GET'
+        });
 
         if (!response.ok) {
-            throw new Error(`Server Error Status: ${response.status}`);
+            throw new Error(`HTTP Error! Status: ${response.status}`);
         }
 
         const data = await response.json();
         
+        loadingText.style.display = 'none';
         responseBox.style.display = 'block';
         responseBox.style.backgroundColor = '#272822';
         responseBox.style.color = '#f8f8f2';
+        responseBox.style.borderLeftColor = '#a6e22e';
         responseBox.innerText = JSON.stringify(data, null, 4);
 
     } catch (error) {
+        loadingText.style.display = 'none';
         responseBox.style.display = 'block';
         responseBox.style.backgroundColor = '#fff0f0';
         responseBox.style.color = '#cc0000';
-        responseBox.innerText = `Error Occurred:\n${error.message}\n\n💡 Did you type * in Origins Allowed and hit Apply Changes?`;
+        responseBox.style.borderLeftColor = '#cc0000';
+        responseBox.innerText = `Fetch Request Failed:\n${error.message}\n\nTroubleshooting tips:\n1. Verify the link is completely correct.\n2. Ensure CORS (Origins Allowed) is set to * on the Module Definition page in Oracle APEX.`;
     }
 }
 </script>
